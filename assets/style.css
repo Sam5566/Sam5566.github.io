@@ -37,7 +37,7 @@ nav .wrap{display:flex;align-items:center;gap:20px;height:54px;font-family:var(-
 .navlinks a:hover{color:#fff}
 
 /* hero: always night sky */
-.hero{position:relative;z-index:1;background:var(--night);color:#E6EAFA;overflow:hidden;min-height:max(600px,100vh);min-height:max(600px,100svh)}
+.hero{position:relative;z-index:1;background:var(--night);color:#E6EAFA;overflow:hidden;min-height:max(600px,calc(100vh - 54px));min-height:max(600px,calc(100svh - 54px))}
 /* the shared stage: pinned behind the hero and the research zoom while they scroll by */
 .cosmos{position:relative;background:var(--night)}
 .cosmos-stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden}
@@ -50,7 +50,7 @@ nav .wrap{display:flex;align-items:center;gap:20px;height:54px;font-family:var(-
 /* with the 3D galaxy the text layer lets drags through to the canvas, except on its controls */
 .hero.sim .wrap{pointer-events:none}.hero.sim .wrap a,.hero.sim .wrap button,.hero.sim .inset{pointer-events:auto}
 .hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(4,6,14,.85) 0%,rgba(4,6,14,.35) 45%,rgba(4,6,14,0) 70%)}
-.hero .wrap{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:space-between;gap:40px;min-height:inherit;padding-block:64px 28px}
+.hero .wrap{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:space-between;gap:40px;min-height:inherit;padding-block:64px max(36px,5vh)}
 .hero h1{font-size:clamp(3.1rem,8vw,6.4rem);letter-spacing:-.02em;line-height:.95;font-weight:400}
 .hero h1 .line{display:block;overflow:hidden;padding-bottom:.08em}
 .hero h1 .line > span{display:inline-block}
@@ -218,7 +218,7 @@ dialog#cv::backdrop{background:rgba(4,6,14,.6);backdrop-filter:blur(5px);-webkit
 
 @media (max-width:860px){
   body{font-size:17px}
-  .hero{min-height:max(780px,100svh)}
+  .hero{min-height:max(780px,calc(100svh - 54px))}
   .hero::after{background:linear-gradient(180deg,rgba(4,6,14,.85) 0%,rgba(4,6,14,.4) 40%,rgba(4,6,14,0) 60%,rgba(4,6,14,.7) 100%)}
   .hero .wrap{padding-block:40px 24px}
   .sh,.proj,.ax,.mapfoot{grid-template-columns:minmax(0,1fr);gap:4px}
@@ -241,7 +241,7 @@ dialog#cv::backdrop{background:rgba(4,6,14,.6);backdrop-filter:blur(5px);-webkit
 .zcard p{margin:0;color:#B4BCDC;font-size:1.05rem}
 .zcard .zk{font-family:var(--sans);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:#93A2FF}
 .zintro h2{font-size:clamp(2rem,4.6vw,3.4rem);line-height:1.08;font-weight:400;margin:0 0 14px;color:#fff}
-.zoom-scale{position:absolute;z-index:2;right:max(18px,calc((100vw - var(--wrap))/2 + 18px));bottom:28px;font-family:var(--sans);font-size:1.5rem;color:#DDE3FF;font-variant-numeric:tabular-nums;text-align:right}
+.zoom-scale{position:absolute;z-index:2;right:max(18px,calc((100vw - var(--wrap))/2 + 18px));bottom:max(28px,5vh);font-family:var(--sans);font-size:1.5rem;color:#DDE3FF;font-variant-numeric:tabular-nums;text-align:right}
 .zoom-scale small{display:block;font-size:.75rem;color:#8F98BF;letter-spacing:.06em;text-transform:uppercase}
 .zoom-labels{position:absolute;inset:0;z-index:1;pointer-events:none}
 .zlabel{position:absolute;left:0;top:0;margin:-12px 0 0 -11px;font:500 .84rem var(--sans);color:#FFD78C;white-space:nowrap;opacity:0;text-shadow:0 1px 2px rgba(0,0,0,.6)}
@@ -266,3 +266,7 @@ footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 dialog#cv[open]{position:fixed;inset:0;margin:auto;z-index:1000;box-shadow:0 30px 90px rgba(3,5,15,.45),0 0 0 100vmax rgba(4,6,14,.6)}
 @keyframes cv-in{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:no-preference){dialog#cv[open]{animation:cv-in .4s cubic-bezier(.2,.8,.2,1)}}
+/* the CV scrolls on its own and never hands the scroll on to the page behind it */
+dialog#cv{overflow-y:auto;overscroll-behavior:contain}
+html:has(dialog#cv[open]){overflow:hidden}
+.cv-body{overscroll-behavior:contain}

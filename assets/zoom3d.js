@@ -226,7 +226,7 @@ function start() {
   const label = (text, cls = '') => { const e = document.createElement('div'); e.className = 'zlabel ' + cls; e.innerHTML = `<span class="pill"><i></i>${text}</span>`; labelsEl.append(e); return e; };
   const L = { sun: label('Sun'), gc: label('Galactic Center', 'hot'), halo: label('dark matter halo', 'dm'),
     sol: label('Sun'), earthSol: label('Earth', 'dm'), earthSun: label('Sun'),
-    lhc: label('LHC, CERN (ring enlarged)', 'hot'), lab: label('underground detectors, Gran Sasso'), wind: label('<svg class="warrow" width="26" height="12" viewBox="0 0 26 12"><path d="M1 6H23M17 1.5L23.5 6L17 10.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> dark matter wind, ~230 km/s', 'dm') };
+    lhc: label('LHC, CERN', 'hot'), lab: label('underground detectors, Gran Sasso'), wind: label('<svg class="warrow" width="26" height="12" viewBox="0 0 26 12"><path d="M1 6H23M17 1.5L23.5 6L17 10.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> dark matter wind, ~230 km/s', 'dm') };
   const windArrow = L.wind.querySelector('.warrow'), wa = new THREE.Vector3(), wb = new THREE.Vector3();
   const tmp = new THREE.Vector3(); let pinFresh = false;
   // Labels don't follow the camera once shown: each tracks its target only while fading in (the zoom
@@ -331,8 +331,10 @@ function start() {
   if (forced === null) {
     // wheel and trackpad
     let w = [], wIdle = 0, momentumTaken = false, lastEv = null;   // lastEv: the latest wheel event, recorded or not
+    // leave scrolling alone while the CV (or any other dialog) is open: it scrolls itself
+    const busy = e => document.querySelector('dialog[open]') || e.target.closest?.('dialog');
     addEventListener('wheel', e => {
-      if (e.ctrlKey) return;                       // pinch zoom
+      if (e.ctrlKey || busy(e)) return;            // pinch zoom, or the CV
       const dy = e.deltaMode === 1 ? e.deltaY * 32 : e.deltaMode === 2 ? e.deltaY * innerHeight : e.deltaY;
       if (!inZone(scrollY, dy)) { stopGlide(); return; }
       e.preventDefault();
@@ -363,7 +365,7 @@ function start() {
 
     // touch
     let tp = null;
-    addEventListener('touchstart', e => { stopGlide(); tp = e.touches.length === 1 ? { y: e.touches[0].clientY, s: [] } : null; }, { passive: true });
+    addEventListener('touchstart', e => { stopGlide(); tp = e.touches.length === 1 && !busy(e) ? { y: e.touches[0].clientY, s: [] } : null; }, { passive: true });
     addEventListener('touchmove', e => {
       if (!tp) return;
       const cy = e.touches[0].clientY, dy = tp.y - cy;
