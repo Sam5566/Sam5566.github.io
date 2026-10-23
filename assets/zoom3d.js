@@ -178,12 +178,18 @@ function start() {
   atmo.renderOrder = -1; ocean.renderOrder = 0; land.renderOrder = lhc.renderOrder = lab.renderOrder = 1;   // the globe hides the far side's dots
   earth.add(atmo, ocean, land, lhc, lab);
   const earthSun = new THREE.Group(); scene.add(earthSun);
-  const sunHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: 0xffb35c, ...additive, opacity: 0 }));
+  const glowTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d'), gr = g.createRadialGradient(256, 256, 0, 256, 256, 256);
+    for (let k = 0; k <= 16; k++) { const u = k / 16; gr.addColorStop(u, `rgba(255,255,255,${(Math.exp(-6 * u * u) * (1 - u)).toFixed(4)})`); }   // smooth falloff to exactly 0 at the edge
+    g.fillStyle = gr; g.fillRect(0, 0, 512, 512); return new THREE.CanvasTexture(c); })();
+  const sunHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffb35c, ...additive, opacity: 0 }));
   // a solid bright disc with a short soft edge, so the Sun reads as a Sun rather than a haze
-  const disc = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  // drawn at 512 px, so the Sun stays smooth when it is large on screen (4K): a small texture shows banding and blocks
+  const disc = (() => { const c = document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d'), gr = g.createRadialGradient(256, 256, 0, 256, 256, 256);
     gr.addColorStop(0, '#fffbef'); gr.addColorStop(.5, '#ffe2a0'); gr.addColorStop(.75, 'rgba(255,200,120,.5)'); gr.addColorStop(1, 'rgba(255,170,90,0)');
-    g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
+    g.fillStyle = gr; g.fillRect(0, 0, 512, 512); return new THREE.CanvasTexture(c); })();
+  // drawn last and not additively, so the wind streaks (in front of it in 3D) don't show through the disc
   const sunCore = new THREE.Sprite(new THREE.SpriteMaterial({ map: disc, transparent: true, depthWrite: false, depthTest: false, opacity: 0 }));
+  sunCore.renderOrder = 10;
   sunHalo.scale.set(18, 18, 1); sunCore.scale.set(3, 3, 1); earthSun.add(sunHalo, sunCore);
   const sunNdc = new THREE.Vector3();
   // the dark matter "wind": the Sun moves through the halo at ~230 km/s, so in Earth's frame dark

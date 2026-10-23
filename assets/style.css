@@ -261,3 +261,8 @@ dialog#cv::backdrop{background:rgba(4,6,14,.6);backdrop-filter:blur(5px);-webkit
 /* the fallback ladder (no zoom) sits on the page background, over the pinned galaxy stage */
 #ladder-wrap{position:relative;z-index:1;background:var(--bg);box-shadow:0 0 0 100vmax var(--bg);clip-path:inset(0 -100vmax);padding-block:72px 24px}
 footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+/* the CV always sits over the screen, even where the browser opens it as a plain (non-modal) dialog;
+   the large shadow stands in for the backdrop then */
+dialog#cv[open]{position:fixed;inset:0;margin:auto;z-index:1000;box-shadow:0 30px 90px rgba(3,5,15,.45),0 0 0 100vmax rgba(4,6,14,.6)}
+@keyframes cv-in{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:no-preference){dialog#cv[open]{animation:cv-in .4s cubic-bezier(.2,.8,.2,1)}}

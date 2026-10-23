@@ -38,7 +38,7 @@ let jt=0;new MutationObserver(()=>{clearTimeout(jt);jt=setTimeout(justifyLong,10
 justifyLong();
 if(GALAXY==='sim'){const m=document.createElement('script');m.type='module';m.src='assets/galaxy3d.js?v=39';document.head.append(m)}
 // research section: scroll-driven zoom from the cosmic web to Earth (falls back to the ladder)
-if(!RM){const m=document.createElement('script');m.type='module';m.src='assets/zoom3d.js?v=63';document.head.append(m)}
+if(!RM){const m=document.createElement('script');m.type='module';m.src='assets/zoom3d.js?v=65';document.head.append(m)}
 const hasG=typeof gsap!=='undefined';
 const NS='http://www.w3.org/2000/svg';
 const $=s=>document.querySelector(s);
@@ -51,10 +51,10 @@ const dlg=$('#cv');
 function openCV(){
   if(typeof dlg.showModal!=='function'){dlg.setAttribute('open','');return}
   dlg.showModal();document.body.style.overflow='hidden';
-  if(hasG&&!RM)gsap.fromTo(dlg,{y:30,opacity:0},{y:0,opacity:1,duration:.4,ease:'power3.out'});
+  // the entrance is a CSS animation (dialog#cv[open]), so the CV can never be left half-transparent
 }
 function closeCV(){const done=()=>{dlg.close();document.body.style.overflow=''};
-  if(hasG&&!RM)gsap.to(dlg,{y:20,opacity:0,duration:.2,ease:'power2.in',onComplete:done});else done()}
+  done()}
 $('#cv-close').onclick=closeCV;
 // Show the PDF download only when assets/cv.pdf has been added to the site
 fetch('assets/cv.pdf',{method:'HEAD'}).then(r=>{if(r.ok&&(r.headers.get('content-type')||'').includes('pdf'))$('#cv-pdf').hidden=false}).catch(()=>{});
