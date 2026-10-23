@@ -281,7 +281,7 @@ async function start() {
     view: () => ({ az, el, dist }), place,
     starSize: () => (canvas.clientWidth > 860 ? .3 : .34), gasSize: .9, sMat, gMat, fog: dMat,
     resize: size,
-    sun: sunP, setHalo: on => { if (halo !== on) hb.click(); },
+    sun: sunP, sun0, disk, setHalo: on => { if (halo !== on) hb.click(); },
     setSpeed: v => { speed = v; },
     // back to the simulation snapshot, where the spiral arms are sharpest
     resetToSnapshot: () => { reset = 0; tEpi = 0; epi.t.value = 0; disk.rotation.z = 0; vel.set(sv); gvel.set(gv); sunP.splice(0, 3, ...sun0); sunV.splice(0, 3, ...sunV0); useGpuEpicycles(); },

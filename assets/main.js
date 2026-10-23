@@ -36,9 +36,9 @@ const sentences=t=>t.split(/(?<![A-Z])[.!?](?=\s+[A-Z(\u201C"]|\s*$)/).filter(x=
 function justifyLong(){document.querySelectorAll('p, figcaption, .place li').forEach(e=>e.classList.toggle('justify',sentences(e.textContent)>2))}
 let jt=0;new MutationObserver(()=>{clearTimeout(jt);jt=setTimeout(justifyLong,100)}).observe(document.body,{childList:true,subtree:true,characterData:true});
 justifyLong();
-if(GALAXY==='sim'){const m=document.createElement('script');m.type='module';m.src='assets/galaxy3d.js?v=39';document.head.append(m)}
+if(GALAXY==='sim'){const m=document.createElement('script');m.type='module';m.src='assets/galaxy3d.js?v=40';document.head.append(m)}
 // research section: scroll-driven zoom from the cosmic web to Earth (falls back to the ladder)
-if(!RM){const m=document.createElement('script');m.type='module';m.src='assets/zoom3d.js?v=67';document.head.append(m)}
+if(!RM){const m=document.createElement('script');m.type='module';m.src='assets/zoom3d.js?v=68';document.head.append(m)}
 const hasG=typeof gsap!=='undefined';
 const NS='http://www.w3.org/2000/svg';
 const $=s=>document.querySelector(s);

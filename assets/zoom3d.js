@@ -143,7 +143,7 @@ function start() {
   // level 2 is the hero's galaxy (C.world); the Galactic Center's gamma-ray glow is added to it
   const gc = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: 0xff8a4c, ...additive, opacity: 0 }));
   gc.scale.set(7, 7, 1); world.add(gc);
-  const sunLocal = new THREE.Vector3();
+  const sunLocal = new THREE.Vector3(), Z_AXIS = new THREE.Vector3(0, 0, 1);
 
   // between the galaxy and Earth: the Solar System, centred on Earth (the Sun 1 AU away)
   const sol = new THREE.Group(); sol.visible = false; scene.add(sol);
@@ -232,9 +232,9 @@ function start() {
   // Labels don't follow the camera once shown: each tracks its target only while fading in (the zoom
   // is still settling), then stays put on screen until it fades out (the camera barely drifts at a stop)
   // off = [dx, dy]: place the label that far from its target, with a thin leader line back to it
-  function pin(el, obj, local, alpha, off) {
+  function pin(el, obj, local, alpha, off, track) {
     if (alpha <= .01) { el.style.opacity = 0; el._at = null; el._fixed = false; return; }
-    if (!el._at || !el._fixed) {
+    if (!el._at || !el._fixed || track) {
       if (!pinFresh) { scene.updateMatrixWorld(); camera.updateMatrixWorld(); pinFresh = true; }
       tmp.copy(local); obj.localToWorld(tmp); tmp.project(camera);
       if (tmp.z >= 1) { el.style.opacity = 0; return; }
@@ -245,8 +245,8 @@ function start() {
       if (off) { el._at[0] += off[0]; el._at[1] += off[1]; }
       // keep the whole label on screen (and clear of the card where it sits under the scene)
       const W = lr.width, H = lr.height, stacked = W <= 760 || (H > W && W <= 1100);
-      el.style.opacity = 0; el.style.transform = 'none';
-      const bw = el.offsetWidth, bh = el.offsetHeight;
+      if (!el._bw) { el.style.transform = 'none'; el._bw = el.offsetWidth; el._bh = el.offsetHeight; }   // measured once
+      const bw = el._bw, bh = el._bh;
       el._at[0] = Math.max(12, Math.min(W - bw - 6, el._at[0]));
       el._at[1] = Math.max(70, Math.min((stacked ? H * .62 : H - 40) - bh, el._at[1]));
       const dx = tgt[0] - el._at[0], dy = tgt[1] - el._at[1], len = Math.hypot(dx, dy) - 9;   // leader stops just short of the target
@@ -438,14 +438,15 @@ function start() {
     world.visible = aGal > .003;
     if (world.visible) {
       const k = s(M_PER.gal), f = smooth(...SUN_AT, pS);
-      sunLocal.set(...C.sun);
+      // the Sun turns with the disk (the zoom shows the galaxy turning, almost still), so it keeps its place among the arms
+      sunLocal.set(...C.sun0).applyAxisAngle(Z_AXIS, C.disk.rotation.z);
       world.scale.setScalar(k); world.position.copy(sunLocal).multiplyScalar(-k * f);   // keep the focus (centre, then Sun) in view
       C.sMat.size = C.starSize() * k; C.gMat.size = C.gasSize * k; C.sMat.opacity = .6 * aGal; C.gMat.opacity = .13 * aGal;
       C.fog.uniforms.glow.value *= aGal * (1 + .4 * smooth(.42, .46, pS));
       gc.material.opacity = .9 * aGal * smooth(.42, .46, pS) * (1 - smooth(.6, .63, pS));
     }
     const stop2 = aGal * smooth(.42, .46, pS) * (1 - smooth(.6, .63, pS));
-    pin(L.sun, world, sunLocal, stop2, [-40, 44]); pin(L.gc, world, new THREE.Vector3(0, 0, 0), stop2, [46, -58]); pin(L.halo, world, new THREE.Vector3(9, 13, 4), stop2);
+    pin(L.sun, world, sunLocal, stop2, [-40, 44], true); pin(L.gc, world, new THREE.Vector3(0, 0, 0), stop2, [46, -58]); pin(L.halo, world, new THREE.Vector3(9, 13, 4), stop2);
 
     // the Solar System
     const aSol = (1 - smooth(13.6, 15.5, z)) * smooth(9.6, 11.2, z);
