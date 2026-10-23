@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sam Cheng-Tse Huang</title>
+<meta name="description" content="Sam Cheng-Tse Huang, physics Ph.D. candidate at Rutgers working on dark matter, the Galactic Center Excess, Higgs physics, cosmology and machine learning for physics.">
+<meta property="og:title" content="Sam Cheng-Tse Huang">
+<meta property="og:description" content="Physics Ph.D. candidate at Rutgers: dark matter, Higgs physics, cosmology, and statistics and machine learning.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#04060E">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
+<link rel="stylesheet" href="assets/style.css?v=34">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js"}}</script>
+</head>
+<body>
+<nav aria-label="Main"><div class="wrap">
+  <a class="brand" href="#top">Sam Cheng-Tse Huang</a>
+  <div class="navlinks"><a href="#research">Research</a><a href="#now">Current work</a><a href="#papers">Publications</a><a href="#places">Network</a><a href="#contact">Contact</a></div>
+</div></nav>
+
+<main>
+<!-- The hero and the research zoom share one pinned 3D stage (galaxy3d.js draws it; zoom3d.js zooms it),
+     so the galaxy carries on from the hero into the zoom without a cut. -->
+<div class="cosmos" id="cosmos">
+<div class="cosmos-stage" id="cosmos-stage"></div>
+<header class="hero" id="top">
+  <canvas id="gal" aria-label="Animated spiral galaxy with a switchable dark matter halo"></canvas>
+  <div class="wrap">
+    <div>
+      <h1 id="name"><span class="line"><span><em>Sam</em> Cheng-Tse</span></span><span class="line"><span>Huang</span></span></h1>
+      <p class="tagline" id="tagline">Ph.D. candidate in physics at Rutgers. I study dark matter and the Higgs sector with data, statistics and machine learning.</p>
+      <div class="links" id="herolinks"></div>
+    </div>
+    <div class="instrument" id="instrument">
+      <div class="ctrl">
+        <button class="toggle" id="halo" role="switch" aria-checked="true"><span class="sw"></span>Dark matter halo</button>
+        <p>A toy Milky Way. Switch the halo off and the outer stars move too fast for the visible mass to hold them.</p>
+      </div>
+      <figure class="inset" style="margin:0" aria-label="Rotation curve">
+        <svg viewBox="0 0 240 150" id="rc"></svg>
+      </figure>
+    </div>
+  </div>
+</header>
+
+<section id="research">
+<!-- Scroll-driven zoom (assets/zoom3d.js): from the cosmic web into the galaxy and down to Earth.
+     Shown only where WebGL works and motion is allowed; otherwise the ladder below is the section. -->
+<div class="zoom" id="zoom" hidden>
+  <div class="zoom-stage">
+    <div class="zoom-labels" id="zlabels" aria-hidden="true"></div>
+    <div class="zoom-scale" id="zscale" aria-hidden="true"></div>
+    <article class="zcard" data-at=".09,.33"><span class="zk">Research · the cosmic web</span><h3>How much matter is there, and how did it clump?</h3><p>Weak gravitational lensing, and the phase transitions and gravitational waves of the early universe.</p></article>
+    <article class="zcard" data-at=".39,.63"><span class="zk">Research · our galaxy</span><h3>Where is the dark matter, and what is it?</h3><p>Weighing the Milky Way's halo with Gaia stars, and the gamma-ray excess at its center.</p></article>
+    <article class="zcard" data-at=".71,1.01"><span class="zk">Research · Earth</span><h3>Can we catch it, or make it?</h3><p>Direct detection deep underground, and the Higgs sector at the LHC.</p></article>
+  </div>
+</div>
+<div class="wrap" id="ladder-wrap">
+  <div class="sh"><span class="no"></span><h2>Research, from the smallest scale to the largest</h2></div>
+  <ol class="ladder" id="ladder">
+    <li class="rung" id="r-higgs">
+      <div class="scale">10<sup>−18</sup> m<small>electroweak scale</small></div>
+      <div class="fig"><svg viewBox="0 0 120 84" id="g-higgs" aria-hidden="true"></svg></div>
+      <div><h3>Higgs physics</h3><p>Extended Higgs sectors such as the Georgi–Machacek model and the gauged two-Higgs-doublet model, tested against LHC data. Former member of the ATLAS H→WW* analysis.</p></div>
+    </li>
+    <li class="rung" id="r-gce">
+      <div class="scale">10<sup>20</sup> m<small>inner galaxy</small></div>
+      <div class="fig"><svg viewBox="0 0 120 84" aria-hidden="true">
+        <defs><radialGradient id="gce-g"><stop offset="0" stop-color="var(--heat)" stop-opacity="1"/><stop offset=".5" stop-color="var(--heat)" stop-opacity=".35"/><stop offset="1" stop-color="var(--heat)" stop-opacity="0"/></radialGradient></defs>
+        <ellipse class="draw" pathLength="1" cx="60" cy="42" rx="56" ry="36" stroke="currentColor" stroke-width="1" opacity=".35" fill="none"/>
+        <line class="draw" pathLength="1" x1="4" y1="42" x2="116" y2="42" stroke="currentColor" stroke-width="1" opacity=".25"/>
+        <circle class="pulse" cx="60" cy="42" r="22" fill="url(#gce-g)"/>
+        <g fill="currentColor" opacity=".55"><circle cx="22" cy="41" r="1.4"/><circle cx="34" cy="44" r="1.4"/><circle cx="88" cy="40" r="1.4"/><circle cx="99" cy="43" r="1.4"/><circle cx="75" cy="24" r="1.4"/><circle cx="46" cy="61" r="1.4"/></g>
+      </svg></div>
+      <div><h3>The Galactic Center Excess</h3><p>Is the gamma-ray glow at the Milky Way's center a dark matter signal, or a crowd of unresolved pulsars? Modelled in Fermi-LAT data, across sky position and energy.</p></div>
+    </li>
+    <li class="rung" id="r-dm">
+      <div class="scale">10<sup>21</sup> m<small>galactic halo</small></div>
+      <div class="fig"><svg viewBox="0 0 120 84" aria-hidden="true">
+        <line x1="10" y1="76" x2="114" y2="76" stroke="currentColor" stroke-width="1" opacity=".3"/>
+        <line x1="10" y1="76" x2="10" y2="6" stroke="currentColor" stroke-width="1" opacity=".3"/>
+        <path class="draw hot" pathLength="1" stroke-width="1.5" stroke-dasharray="4 3" d="M10 76 C 22 30, 34 30, 50 44 S 90 66, 112 70"/>
+        <path class="draw acc" pathLength="1" stroke-width="2.2" d="M10 76 C 20 26, 34 22, 54 22 S 96 20, 112 20"/>
+        <g fill="currentColor"><circle cx="22" cy="40" r="2"/><circle cx="34" cy="27" r="2"/><circle cx="48" cy="23" r="2"/><circle cx="62" cy="21" r="2"/><circle cx="76" cy="23" r="2"/><circle cx="90" cy="20" r="2"/><circle cx="104" cy="21" r="2"/></g>
+        <text x="114" y="84" text-anchor="end">r</text><text x="2" y="10">v</text>
+      </svg></div>
+      <div><h3>Dark matter in the Milky Way</h3><p>Weighing the dark matter halo through the motion of stars accreted in past mergers, as measured by Gaia.</p></div>
+    </li>
+    <li class="rung" id="r-early">
+      <div class="scale">10<sup>26</sup> m<small>observable universe</small></div>
+      <div class="fig"><svg viewBox="0 0 120 84" id="g-gw" aria-hidden="true"></svg></div>
+      <div><h3>The early universe</h3><p>First-order electroweak phase transitions and the stochastic gravitational-wave background they would leave for detectors such as LISA.</p></div>
+    </li>
+  </ol>
+  <div class="toolkit">
+    <div class="scale">every scale<small>the common toolkit</small></div>
+    <div class="fig flow"><svg viewBox="0 0 120 84" id="g-flow" aria-hidden="true"></svg></div>
+    <div><h3>Statistics &amp; machine learning</h3><p>Boosted decision trees, convolutional networks, normalizing flows and Bayesian MCMC, chosen to fit the physics question rather than the other way round.</p></div>
+  </div>
+</div></section>
+</div><!-- /cosmos -->
+
+<section id="now"><div class="wrap">
+  <div class="sh"><span class="no"></span><h2>Current work</h2></div>
+  <article class="proj">
+    <span class="k">2026 – in progress</span>
+    <div>
+      <h3>Cosmology from weak gravitational lensing</h3>
+      <p class="au">with Ian Pang and Agni Purani</p>
+      <figure class="pfig">
+        <div class="wlfig" id="wlfig">
+          <div class="wlside"><canvas id="wlweb" width="320" height="320" aria-label="A slice of the cosmic web for the chosen cosmology"></canvas><span class="lbl">Cosmic web, a slice</span></div>
+          <span class="wlarrow" aria-hidden="true">→</span>
+          <div class="wlside"><canvas id="wlmap" width="320" height="320" aria-label="The weak-lensing map that this matter produces"></canvas><span class="lbl">Weak-lensing map</span></div>
+        </div>
+        <span class="lbl wlread" id="wlread"></span>
+        <figcaption><b>Fig. 1.</b> Left: a slice of the cosmic web, the sheets, filaments and clusters that gravity builds out of the early universe's small ripples. Right: the weak-lensing map that this matter, and more of it along the line of sight, imprints on the shapes of distant galaxies. As σ<sub>8</sub> rises the web grows clumpier, and as Ω<sub>m</sub> rises there is more matter to bend the light; the figure drifts between such universes. Real lensing surveys measure best the combination S<sub>8</sub>, and some find it a little lower than the cosmic microwave background predicts; whether that points to new physics or to effects not yet understood is still open.</figcaption>
+      </figure>
+    </div>
+  </article>
+  <article class="proj">
+    <span class="k">2024 – in progress</span>
+    <div>
+      <h3>J-factor of the Galactic Center Excess in Fermi-LAT data</h3>
+      <p class="au">with Ian Pang, Yitian Sun, Matthew Buckley, David Shih and Tracy Slatyer</p>
+      <figure class="pfig">
+        <div class="decomp" id="decomp">
+          <div class="panel"><div class="sq"><canvas width="96" height="96" aria-label="Gamma-ray counts map of the inner galaxy"></canvas></div><span class="lbl">Fermi-LAT data</span></div>
+          <div class="panel"><div class="sq"><canvas width="96" height="96" aria-hidden="true"></canvas><span class="op">=</span></div><span class="lbl">Galactic diffuse and bubbles</span></div>
+          <div class="panel"><div class="sq"><canvas width="96" height="96" aria-hidden="true"></canvas><span class="op">+</span></div><span class="lbl">Point sources</span></div>
+          <div class="panel ex"><div class="sq"><canvas width="96" height="96" aria-hidden="true"></canvas><span class="op">+</span></div><span class="lbl">The excess</span></div>
+        </div>
+        <figcaption><b>Fig. 2.</b> Template fitting. The inner 40° × 40° of the gamma-ray sky is split into known components; what is left over is the excess. My model does this in 2+1 dimensions, sky position and energy, to pin down the excess's shape on the sky. If the excess is dark matter annihilating, that shape is its J-factor: the dark matter density squared, summed along each line of sight.</figcaption>
+      </figure>
+    </div>
+  </article>
+  <article class="proj">
+    <span class="k">2023 – in progress</span>
+    <div>
+      <h3>Accreted stars as kinematic tracers of dark matter</h3>
+      <p class="au">with Matthew Buckley, David Shih and Justin Read</p>
+      <figure class="pfig">
+        <div class="elz"><canvas id="elz" aria-label="Energy versus angular momentum plot of Milky Way halo stars, with accreted groups highlighted"></canvas></div>
+        <figcaption><b>Fig. 3.</b> Stars that arrived in past galaxy mergers still cluster in energy E and angular momentum L<sub>z</sub>. Boosted decision trees pick them out of Gaia data, and masked autoregressive flows learn their density in phase space, which traces how the dark matter they arrived with moves.</figcaption>
+      </figure>
+    </div>
+  </article>
+</div></section>
+
+<section id="papers"><div class="wrap">
+  <div class="sh"><span class="no"></span><h2>Publications</h2></div>
+  <ol class="arx" id="papers-list">
+    <li class="ax" data-arxiv="2607.12008">
+      <span class="k">[1]</span>
+      <div>
+        <div class="aid"><a class="id" href="https://arxiv.org/abs/2607.12008" data-id="arXiv:2607.12008">arXiv:2607.12008</a><span>[<a href="https://arxiv.org/pdf/2607.12008">pdf</a>]</span><span class="cat">astro-ph.GA</span></div>
+        <h3>A Universal Distribution of Dark Matter in Milky Way-like galaxies and How to Infer It</h3>
+        <p class="au"><b>Sam Cheng-Tse Huang</b>, Matthew R. Buckley, Justin I. Read, David Shih</p>
+        <dl class="meta"><dt>Status</dt><dd>arXiv preprint (Jul 2026)</dd></dl>
+        <button class="abs-t" type="button" aria-expanded="false">Show summary</button>
+        <div class="abs"><div><p>How dark matter is spread out and moving in the Milky Way matters for reading direct-detection experiments, but it is hard to observe. Across three independent suites of cosmological simulations of Milky Way-mass galaxies, a simple change of coordinates makes the dark matter phase-space distribution nearly the same in every galaxy; kinematic plots and machine-learning classifiers that see the full phase space both support this. It breaks down only at extreme radii or speeds, and in one simulation with a prominent accreted dark disk. The parameters of the transformation can be inferred from metal-poor stars ([Fe/H] &lt; −2), which also carry the dark disk's signature, and a normalizing flow models the universal distribution. Applying it to Gaia and SDSS data is left for a forthcoming paper.</p></div></div>
+      </div>
+    </li>
+    <li class="ax" data-arxiv="2205.02064">
+      <span class="k">[2]</span>
+      <div>
+        <div class="aid"><a class="id" href="https://arxiv.org/abs/2205.02064" data-id="arXiv:2205.02064">arXiv:2205.02064</a><span>[<a href="https://arxiv.org/pdf/2205.02064">pdf</a>, <a href="https://doi.org/10.1103/PhysRevD.106.055019">journal</a>]</span><span class="cat">hep-ph</span></div>
+        <h3>Updated constraints on the Georgi–Machacek model, and its electroweak phase transition and associated gravitational waves</h3>
+        <p class="au">Ting-Kuo Chen, Cheng-Wei Chiang, <b>Cheng-Tse Huang</b>, Bo-Qiang Lu</p>
+        <dl class="meta"><dt>Journal-ref</dt><dd><i>Phys. Rev. D</i> 106, 055019 (2022)</dd></dl>
+        <button class="abs-t" type="button" aria-expanded="false">Show summary</button>
+        <div class="abs"><div><p>An updated scan of the model's parameter space under unitarity, vacuum stability, Higgs measurements and LHC searches for exotic scalars. Among the regions that give a strong first-order electroweak phase transition, only the one-step transition survives, and most of the gravitational-wave signals it produces are within reach of proposed detectors. Di-Higgs and exotic-scalar production at the LHC can test the model.</p></div></div>
+      </div>
+    </li>
+    <li class="ax" data-manual data-date="2021-04-01">
+      <span class="k">[3]</span>
+      <div>
+        <div class="aid"><a class="id" href="https://cds.cern.ch/search?p=ATLAS-CONF-2021-014" data-id="ATLAS-CONF-2021-014">ATLAS-CONF-2021-014</a><span>[<a href="https://cds.cern.ch/search?p=ATLAS-CONF-2021-014">cds</a>]</span><span class="cat">hep-ex</span></div>
+        <h3>Measurements of gluon fusion and vector-boson-fusion production of the Higgs boson in H→WW*→eνμν decays using pp collisions at √s = 13 TeV</h3>
+        <p class="au">ATLAS Collaboration</p>
+        <dl class="meta"><dt>Journal-ref</dt><dd>ATLAS conference note (2021)</dd></dl>
+        <button class="abs-t" type="button" aria-expanded="false">Show summary</button>
+        <div class="abs"><div><p>ATLAS measures how often the Higgs boson is produced by gluon fusion and by vector-boson fusion, using its decay to an electron, a muon and two neutrinos in LHC Run 2 data. I worked on the WW control region, where a new transverse-mass definition with BDTs and DNNs raised W purity by up to 15%.</p></div></div>
+      </div>
+    </li>
+    <li class="ax" data-arxiv="1905.02396">
+      <span class="k">[4]</span>
+      <div>
+        <div class="aid"><a class="id" href="https://arxiv.org/abs/1905.02396" data-id="arXiv:1905.02396">arXiv:1905.02396</a><span>[<a href="https://arxiv.org/pdf/1905.02396">pdf</a>, <a href="https://doi.org/10.1007/JHEP09(2019)048">journal</a>]</span><span class="cat">hep-ph</span></div>
+        <h3>Consistency of Gauged Two Higgs Doublet Model: Gauge Sector</h3>
+        <p class="au"><b>Cheng-Tse Huang</b>, Raymundo Ramos, Van Que Tran, Yue-Lin Sming Tsai, Tzu-Chiang Yuan</p>
+        <dl class="meta"><dt>Journal-ref</dt><dd><i>JHEP</i> 09 (2019) 048</dd></dl>
+        <button class="abs-t" type="button" aria-expanded="false">Show summary</button>
+        <div class="abs"><div><p>The new gauge-sector parameters of the gauged two-Higgs-doublet model are constrained with LEP electroweak precision data on and off the Z pole and with LHC Drell–Yan and high-mass dilepton searches, with projections for the proposed CEPC collider. The paper also shows why the Stueckelberg mass for hypercharge must vanish to keep the standard charges of quarks and leptons.</p></div></div>
+      </div>
+    </li>
+  </ol>
+  <p class="cap synced" id="papers-sync"><a href="https://inspirehep.net/authors/1735317" target="_blank" rel="noopener">Full list on INSPIRE</a></p>
+</div></section>
+
+<section id="places"><div class="wrap">
+  <div class="sh"><span class="no"></span><h2>Research network</h2></div>
+  <figure class="mapfig">
+    <div class="map" id="mapc">
+      <svg viewBox="0 0 1440 560" aria-hidden="true">
+        <defs><clipPath id="scan"><rect id="scanr" x="0" y="0" width="1440" height="560"/></clipPath></defs>
+        <path id="land" clip-path="url(#scan)" fill="var(--dot)"/>
+        <g id="collab-links" fill="none" stroke="var(--tert)" stroke-width="1.6" stroke-linecap="round"></g>
+      </svg>
+    </div>
+    <div class="mapfoot">
+      <div class="legend cap"><span><i></i>Studied or worked</span><span class="t"><i></i>Gave a talk</span><span class="c"><i></i>Collaborators</span></div>
+      <div class="place" id="place" aria-live="polite"></div>
+    </div>
+  </figure>
+</div></section>
+
+<section class="contact" id="contact"><div class="wrap">
+  <div class="sh" style="margin-bottom:16px"><span class="no"></span><h2>Contact</h2></div>
+  <div class="sh" style="margin:0"><span></span><div>
+    <div class="mail"><span class="addr" id="email">sam.huang@physics.rutgers.edu</span></div>
+    <div class="links" id="footlinks"></div>
+  </div></div>
+</div></section>
+</main>
+<footer class="wrap cap"><span>© 2026 Sam Cheng-Tse Huang</span><span id="galaxy-credit">The galaxy above is a toy model, not a simulation of real data.</span></footer>
+
+<dialog id="cv" aria-labelledby="cv-title">
+  <div class="cv-head"><b id="cv-title">Curriculum vitae</b><a class="cv-pdf" id="cv-pdf" href="assets/cv.pdf" target="_blank" rel="noopener" hidden>Download PDF</a><button class="x" id="cv-close" aria-label="Close CV"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
+  <div class="cv-body">
+    <p class="intro">Ph.D. candidate in physics working on particle and astroparticle phenomenology: data-driven studies of dark matter kinematics in the Milky Way, and statistical methods that get the most out of machine learning in physics.</p>
+    <h3>Education</h3>
+    <div class="cv-row"><b>Ph.D. in Physics, Rutgers University – New Brunswick</b><span class="d">2023 – now</span></div>
+    <div class="cv-row"><b>M.Sc. in Physics, National Taiwan University</b><span class="d">2020 – 2022</span></div>
+    <div class="cv-row"><b>B.Sc. in Physics, National Tsing Hua University</b><span class="d">2016 – 2020</span></div>
+    <h3>Research</h3>
+    <div class="cv-row"><b>New High Energy Theory Center, Rutgers</b><span class="d">2023 – now</span><p>Advisor Matthew Buckley. Galactic Center Excess morphology with Fermi data; accreted Gaia stars as dark matter tracers using BDTs and masked autoregressive flows.</p></div>
+    <div class="cv-row"><b>High Energy Phenomenology Group, NTU</b><span class="d">2020 – 2023</span><p>Advisor Cheng-Wei Chiang. Bayesian MCMC global fit of the Georgi–Machacek model; EWPT and gravitational-wave predictions; jet identification with BDT and CNN, optimal jet-charge κ ≈ 0.23.</p></div>
+    <div class="cv-row"><b>ATLAS HWW Group, NTHU</b><span class="d">2019 – 2020</span><p>Advisor Pai-Hsien Jennifer Hsu. New transverse-mass definition with BDT and DNN; W purity up to 15% higher in the WW control region.</p></div>
+    <div class="cv-row"><b>Theoretical High Energy Group, Academia Sinica</b><span class="d">2018 – 2019</span><p>Advisors Yue-Lin Sming Tsai and Tzu-Chiang Yuan. Z-pole constraints on G2HDM; DNN sample generator with 10% better accuracy.</p></div>
+    <div class="cv-row"><b>Astroparticle Lab, NTHU</b><span class="d">2017</span><p>Advisor Hsiang-Kuang Chang. Compton scattering simulation for the Compton Spectrometer and Imager prototype.</p></div>
+    <h3>Publications</h3>
+    <div id="cv-pubs">
+    <div class="cv-row" data-arxiv="2607.12008"><b>A Universal Distribution of Dark Matter in Milky Way-like galaxies and How to Infer It</b><span class="d">arXiv 2026</span><p>S. C.-T. Huang, M. R. Buckley, J. I. Read, D. Shih</p></div>
+    <div class="cv-row" data-arxiv="2205.02064"><b>Updated constraints on the Georgi–Machacek model and its EWPT and associated GWs</b><span class="d">PRD 2022</span><p>T.-K. Chen, C.-W. Chiang, C.-T. Huang, B.-Q. Lu</p></div>
+    <div class="cv-row" data-manual data-date="2021-04-01"><b>ggF and VBF Higgs production in H→WW*→eνμν at √s = 13 TeV</b><span class="d">ATLAS-CONF 2021</span><p>ATLAS Collaboration</p></div>
+    <div class="cv-row" data-arxiv="1905.02396"><b>Consistency of Gauged Two Higgs Doublet Model: Gauge Sector</b><span class="d">JHEP 2019</span><p>C.-T. Huang, R. Ramos, V. Q. Tran, Y.-L. S. Tsai, T.-C. Yuan</p></div>
+    </div>
+    <h3>Talks</h3>
+    <div class="cv-row"><b>Joint spatial–spectral Gaussian process modeling of the Galactic Center Excess</b><span class="d">Sep 2026</span><p>2nd UNDARK workshop, Tenerife, Spain</p></div>
+    <div class="cv-row"><b>A universal distribution of dark matter in Milky Way-like galaxies and how to infer it</b><span class="d">Jul 2026</span><p>Dark Matter and Stars, Southampton, UK</p></div>
+    <div class="cv-row"><b>Joint spatial–spectral Gaussian process modeling of the Galactic Center Excess</b><span class="d">May 2026</span><p>Phenomenology Symposium 2026, Pittsburgh, USA</p></div>
+    <div class="cv-row"><b>Inferring dark matter scales from stellar kinematic distributions in Milky Way-like galaxies</b><span class="d">Dec 2025</span><p>International Joint Workshop on the Standard Model and Beyond, Taipei, Taiwan</p></div>
+    <div class="cv-row"><b>Updated constraints on the GM model and its EWPT and GWs</b><span class="d">Jan 2023</span><p>Annual Meeting of the Physical Society of Taiwan, Kaohsiung</p></div>
+    <div class="cv-row"><b>EWPT in the Georgi–Machacek model under LHC constraints</b><span class="d">Aug 2021</span><p>Asia-Pacific Workshop on Particle Physics and Cosmology, online</p></div>
+    <h3>Teaching</h3>
+    <div class="cv-row"><b>Instructor, General and Analytic Physics, Classical Physics Labs (Rutgers)</b><span class="d">2023 – 2025</span></div>
+    <div class="cv-row"><b>Teaching assistant, Seminar on Advanced Special / Applied Topics (NTU)</b><span class="d">Fall 2021</span></div>
+    <div class="cv-row"><b>Instructor, General Physics Laboratory (NTHU)</b><span class="d">Spring 2020</span></div>
+    <div class="cv-row"><b>Instructor, NTHU Science Summer Camp</b><span class="d">2017, 2018</span></div>
+  </div>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="assets/main.js?v=129"></script>
+</body>
+</html>
