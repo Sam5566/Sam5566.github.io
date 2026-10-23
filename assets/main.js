@@ -6,7 +6,7 @@ const LINKS=[
   {label:'Open CV',action:'cv'},
   {label:'INSPIRE',url:'https://inspirehep.net/authors/1735317'},
   {label:'ORCID',url:'https://orcid.org/0000-0003-1490-1339'},
-  {label:'Google Scholar',url:'https://scholar.google.com/scholar?q=%22Cheng-Tse+Huang%22'},
+  {label:'Google Scholar',url:'https://scholar.google.com/citations?user=BZGBn8oAAAAJ'},
   {label:'GitHub',url:''},
   {label:'LinkedIn',url:''},
 ];
@@ -463,12 +463,8 @@ function renderTex(root){if(!root.querySelector('.tex')||!/\$/.test(root.textCon
 /* ===== GSAP choreography ===== */
 if(!hasG||RM)return;
 gsap.registerPlugin(ScrollTrigger);
-const tl=gsap.timeline({defaults:{ease:'power4.out'}});
-tl.from('#name .line > span',{yPercent:105,duration:1.1,stagger:.12})
-  .from('#gal',{opacity:0,scale:1.08,duration:2.2,ease:'power2.out'},0)
-  .from('#tagline',{y:14,opacity:0,duration:.8},'-=.6')
-  .from('#herolinks > *',{y:10,opacity:0,duration:.5,stagger:.06},'-=.5')
-  .from('#instrument',{y:20,opacity:0,duration:.8},'-=.3');
+// the hero's entrance is a CSS animation (style.css, "hero intro"): it runs on the compositor, so it
+// stays smooth while the 3D galaxy is still loading and setting up on the main thread
 
 // the scale axis fills as you scroll down the ladder; each figure draws as it arrives
 gsap.fromTo('#ladder',{'--p':0},{'--p':1,ease:'none',scrollTrigger:{trigger:'#ladder',start:'top 70%',end:'bottom 60%',scrub:.4}});
