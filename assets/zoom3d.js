@@ -285,8 +285,7 @@ function start() {
   //    momentum stream, recognised by its steadily shrinking deltas) it glides on to the next stop,
   //    starting at the gesture's own speed and easing to rest, with no pause in between;
   //    released still (held, then lifted) it stays if near a stop, else eases to the next one
-  //  - mouse wheel: each notch glides one stop
-  //  - scrollbar or keys: when they stop, it eases to the next stop in their direction
+  //  - mouse wheel, scrollbar or keys: native; when they stop, it eases to the next stop in their direction
   // Any new input during a glide hands control straight back. Outside the zone scrolling is native.
   const NEAR = () => innerHeight * .35;             // within this of a stop, the page may rest anywhere
   // measured once, and again only when the page's size changes (each measurement forces a layout)
@@ -330,26 +329,27 @@ function start() {
   }
   if (forced === null) {
     // wheel and trackpad
-    let w = [], wIdle = 0, momentumTaken = false, lastEv = null;   // lastEv: the latest wheel event, recorded or not
+    let w = [], wIdle = 0, momentumTaken = false, lastEv = null, notched = false;   // lastEv: the latest wheel event, recorded or not
     // leave scrolling alone while the CV (or any other dialog) is open: it scrolls itself
     const busy = e => document.querySelector('dialog[open]') || e.target.closest?.('dialog');
     addEventListener('wheel', e => {
       if (e.ctrlKey || busy(e)) return;            // pinch zoom, or the CV
       const dy = e.deltaMode === 1 ? e.deltaY * 32 : e.deltaMode === 2 ? e.deltaY * innerHeight : e.deltaY;
       if (!inZone(scrollY, dy)) { stopGlide(); return; }
-      e.preventDefault();
       const now = performance.now(), prev = lastEv; lastEv = { t: now, dy };
       const fresh = !prev || now - prev.t > 140 || Math.abs(dy) > Math.abs(prev.dy) * 1.25 + 2 || Math.sign(dy) !== Math.sign(prev.dy);
+      // a mouse wheel (whole-notch steps: lines, or whole pixels of 100 or more as a gesture starts):
+      // the browser scrolls it natively, so every notch counts and a spin keeps going; the scroll
+      // listener below settles on a stop once it ends
+      if (fresh) notched = e.deltaMode === 1 || (Math.abs(dy) >= 100 && Number.isInteger(e.deltaY));
+      if (notched) { stopGlide(); clearTimeout(wIdle); return; }
+      e.preventDefault();
       if (glide && !fresh) return;                 // the momentum tail of a gesture we've taken over
       // any new input (a pause, a speed-up or a change of direction) is the user again: hand back fully
       if (fresh) { stopGlide(); w = []; momentumTaken = false; }
       if (momentumTaken) return;                   // the rest of a momentum tail, after its glide ended
       w.push({ t: now, dy }); if (w.length > 8) w.shift();
       lastDir = Math.sign(dy) || lastDir;
-      // a mouse wheel: big, whole-notch steps with gaps between them
-      if (e.deltaMode === 1 || (Math.abs(dy) >= 100 && Number.isInteger(e.deltaY) && w.length === 1)) {
-        const t = nextStop(scrollY, Math.sign(dy)); if (t !== undefined) glideTo(t, 0); momentumTaken = true; return;
-      }
       go(scrollY + dy);
       // the OS's momentum: a clean run of closely spaced events, each a few per cent smaller than the
       // last (a finger slowing down is far noisier than this)
@@ -380,7 +380,7 @@ function start() {
       tp = null; release(stale ? 0 : (b.y - a.y) / Math.max(8, b.t - a.t));
     }, { passive: true });
 
-    // anything else that scrolls (scrollbar, keys, links): settle once it stops
+    // anything else that scrolls (mouse wheel, scrollbar, keys, links): settle once it stops
     let sIdle = 0, sLast = scrollY;
     addEventListener('scroll', () => {
       if (own.y !== null && Math.abs(scrollY - own.y) < 2) return;   // our own movement
