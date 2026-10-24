@@ -233,7 +233,7 @@ dialog#cv::backdrop{background:rgba(4,6,14,.6);backdrop-filter:blur(5px);-webkit
 }
 
 /* research zoom (zoom3d.js): a pinned 3D stage while the section scrolls by */
-.zoom{position:relative;z-index:1;height:300vh;color:#E6EAFA;pointer-events:none}
+.zoom{position:relative;z-index:1;height:330vh;color:#E6EAFA;pointer-events:none}
 .zoom-stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden}
 .zoom-stage::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(4,6,14,.82) 0%,rgba(4,6,14,.3) 42%,rgba(4,6,14,0) 65%)}
 .zcard{position:absolute;z-index:2;left:max(18px,calc((100vw - var(--wrap))/2 + 18px));top:50%;width:min(27em,calc(100vw - 36px));opacity:0;pointer-events:none;will-change:opacity,transform;transform:translateY(calc(-50% + var(--dy,0px)))}
