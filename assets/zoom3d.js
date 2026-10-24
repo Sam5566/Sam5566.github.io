@@ -22,7 +22,7 @@ const Z_HERO = Math.log10(HALF * M_PER.gal);   // the hero's view, about 10^20.5
 // starts at the hero's view and zooms out to the cosmic web as the hero scrolls away; then three
 // stops (web, galaxy, Earth),
 // passing through the Solar System on the way down
-const ZKEYS = [[0, Z_HERO], [.12, 24.15], [.3, 24.0], [.42, 20.75], [.6, 20.6], [.63, 20.45], [.67, 12.6], [.69, 12.4], [.74, 7.35], [1, 7.2]];
+const ZKEYS = [[0, Z_HERO], [.12, 23.95], [.3, 23.85], [.42, 20.75], [.6, 20.6], [.63, 20.45], [.67, 12.6], [.69, 12.4], [.74, 7.35], [1, 7.2]];
 const SUN_AT = [.6, .63];       // the view slides from the Galactic Center to the Sun here
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 function zAt(p) {
@@ -34,12 +34,31 @@ function zAt(p) {
 }
 const window_ = (p, a, b, f = .025) => smooth(a, a + f, p) * (1 - smooth(b - f, b, p));
 
-/* ---------- level 1: a 3D cosmic web (Zel'dovich approximation) ---------- */
-// Particles start on a 64^3 grid and move by the displacement field of one Gaussian random field
-// (power-law spectrum with a small-scale cutoff, via 3D FFT). The box is recentred on its densest
-// knot, which is where the galaxy will appear.
+/* ---------- level 1: a 3D cosmic web at its real physical scale ---------- */
+// The linear LCDM power spectrum today (Eisenstein & Hu 1998 no-wiggle transfer function) at the
+// m12i cosmology, normalised to sigma8 = 0.807, in a 100 Mpc box of 64^3 particles; the particles are
+// moved by the truncated Zel'dovich approximation (Coles, Melott & Shandarin 1993; Gaussian cut at
+// twice the non-linear scale k_nl = 0.185 / Mpc). Nothing is tuned by eye: the rms displacement is
+// about 7 Mpc and the voids come out 20-40 Mpc across, as in surveys and simulations.
+// (Checked offline in galaxy-build/web_check.py.) The box is recentred on its densest knot, which
+// is where the galaxy will appear. Self-contained, as it also runs in a worker.
 function cosmicWeb() {
-  const N = 64, BOX = 200;                       // Mpc
+  const N = 64, BOX = 100;                       // Mpc
+  const OM = .272, OB = .0455, H = .702, NS = .961, S8 = .807, KCUT = 2 * .185;
+  const transfer = k => {                         // k in 1/Mpc
+    const th = 2.728 / 2.7, wm = OM * H * H, wb = OB * H * H, fb = OB / OM;
+    const s = 44.5 * Math.log(9.83 / wm) / Math.sqrt(1 + 10 * wb ** .75);
+    const a = 1 - .328 * Math.log(431 * wm) * fb + .38 * Math.log(22.3 * wm) * fb * fb;
+    const q = (k / H) * th * th / (OM * H * (a + (1 - a) / (1 + (.43 * k * s) ** 4)));
+    const L0 = Math.log(2 * Math.E + 1.8 * q), C0 = 14.2 + 731 / (1 + 62.5 * q);
+    return L0 / (L0 + C0 * q * q);
+  };
+  const Pu = k => k ** NS * transfer(k) ** 2;
+  let s2 = 0; for (let i = 0; i < 4000; i++) {    // sigma8 normalisation (top hat of 8 / h Mpc)
+    const lk = -4 + 6 * (i + .5) / 4000, k = 10 ** lk, x = k * 8 / H, W = 3 * (Math.sin(x) - x * Math.cos(x)) / x ** 3;
+    s2 += Pu(k) * W * W * k ** 3 / (2 * Math.PI ** 2) * Math.LN10 * 6 / 4000;
+  }
+  const P = k => S8 * S8 / s2 * Pu(k);
   const rnd = (s => () => (s = (s * 16807) % 2147483647) / 2147483647)(11);
   const g = () => { let u = 0, v = 0; while (!u) u = rnd(); while (!v) v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
   function fft(re, im, inv) {
@@ -72,19 +91,18 @@ function cosmicWeb() {
   fft3(re, im, false);
   const kk = i => (i < N / 2 ? i : i - N) * 2 * Math.PI / N;
   const disp = [0, 1, 2].map(() => [new Float64Array(N3), new Float64Array(N3)]);
-  let dv = 0;
+  const cell = BOX / N;
   for (let z = 0; z < N; z++) for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
     const k = [kk(x), kk(y), kk(z)], k2 = k[0] ** 2 + k[1] ** 2 + k[2] ** 2, i = (z * N + y) * N + x;
     if (!k2) continue;
-    const amp = Math.pow(k2, -0.8) * Math.exp(-k2 / (2 * .7 * .7)) / k2, a = re[i] * amp, b = im[i] * amp;
-    for (let d = 0; d < 3; d++) { disp[d][0][i] = -k[d] * b; disp[d][1][i] = k[d] * a; }   // psi = i k phi
-    dv += k2 * k2 * (a * a + b * b);
+    const kp = Math.sqrt(k2) / cell, amp = Math.sqrt(P(kp) * N3 / BOX ** 3) * Math.exp(-kp * kp / (2 * KCUT * KCUT)) / (kp * kp) / cell;
+    const a = re[i] * amp, b = im[i] * amp;      // delta(k) / k^2, with k in 1/Mpc
+    for (let d = 0; d < 3; d++) { disp[d][0][i] = -k[d] * b; disp[d][1][i] = k[d] * a; }   // psi = i k delta / k^2 (Mpc)
   }
   for (let d = 0; d < 3; d++) fft3(disp[d][0], disp[d][1], true);
-  const D = 1.9 / Math.sqrt(dv / N3 / N3);       // strong enough for sheets, filaments and knots
-  const cell = BOX / N, pos = new Float32Array(N3 * 3);
+  const pos = new Float32Array(N3 * 3), J = .35;   // a little jitter hides the starting lattice
   for (let z = 0, i = 0; z < N; z++) for (let y = 0; y < N; y++) for (let x = 0; x < N; x++, i++) {
-    pos[3 * i] = (x + D * disp[0][0][i]) * cell; pos[3 * i + 1] = (y + D * disp[1][0][i]) * cell; pos[3 * i + 2] = (z + D * disp[2][0][i]) * cell;
+    pos[3 * i] = (x + J * (2 * rnd() - 1)) * cell + disp[0][0][i]; pos[3 * i + 1] = (y + J * (2 * rnd() - 1)) * cell + disp[1][0][i]; pos[3 * i + 2] = (z + J * (2 * rnd() - 1)) * cell + disp[2][0][i];
   }
   // densest knot on a coarse grid; recentre the (periodic) box on it
   const M = 32, cnt = new Uint16Array(M ** 3);
@@ -99,7 +117,27 @@ function cosmicWeb() {
   }
   node[0] += cx / n; node[1] += cy / n; node[2] += cz / n;
   for (let i = 0; i < N3; i++) for (let k = 0; k < 3; k++) { let v = wrap(pos[3 * i + k]) - node[k]; pos[3 * i + k] = v - BOX * Math.round(v / BOX); }
-  return pos;
+  // brightness from local density (counts on the particle grid, lightly smoothed): seen through the
+  // whole box, filaments and knots stand out instead of a uniform haze; positions and weights are
+  // returned together, as one array of [x, y, z, w]
+  const dens = new Float32Array(N3), cw = BOX / N, idx = v => Math.min(N - 1, Math.max(0, Math.floor((v + BOX / 2) / cw)));
+  for (let i = 0; i < N3; i++) dens[(idx(pos[3 * i + 2]) * N + idx(pos[3 * i + 1])) * N + idx(pos[3 * i])]++;
+  const sm = new Float32Array(N3);
+  for (let z = 0; z < N; z++) for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    let a = 0; for (let dz = -1; dz <= 1; dz++) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++)
+      a += dens[(((z + dz + N) % N) * N + (y + dy + N) % N) * N + (x + dx + N) % N];
+    sm[(z * N + y) * N + x] = a / 27;
+  }
+  const out = new Float32Array(N3 * 4);
+  for (let i = 0; i < N3; i++) {
+    const rho = sm[(idx(pos[3 * i + 2]) * N + idx(pos[3 * i + 1])) * N + idx(pos[3 * i])];
+    out[4 * i] = pos[3 * i]; out[4 * i + 1] = pos[3 * i + 1]; out[4 * i + 2] = pos[3 * i + 2];
+    // voids ~0, filaments ~0.3-0.6, knots 1; and a soft ball ~35 Mpc around the galaxy's knot, so the
+    // view isn't the whole 100 Mpc depth stacked up (which washes the voids out)
+    const r = Math.hypot(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2]), ball = Math.min(1, Math.max(0, (48 - r) / 26));
+    out[4 * i + 3] = (.05 + .95 * Math.min(1, Math.max(0, (rho - 1) / 3.5))) * ball * ball;
+  }
+  return out;
 }
 
 /* ---------- level 3: a dotted Earth (the site's world map), the LHC and an underground lab ---------- */
@@ -130,14 +168,19 @@ function start() {
   // the web takes ~1 s to compute, so it's built in a background thread and the page never stalls;
   // without workers, it's built in idle time (or at once, if the zoom is reached first)
   let webReady = false;
-  const setWeb = pos => { if (!webReady) { wGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); webReady = true; } };
+  const setWeb = xyzw => {
+    if (webReady) return;
+    const n = xyzw.length / 4, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), C = new THREE.Color(0x9aa8ff);
+    for (let i = 0; i < n; i++) for (let c = 0; c < 3; c++) { pos[3 * i + c] = xyzw[4 * i + c]; col[3 * i + c] = C.toArray()[c] * xyzw[4 * i + 3]; }
+    wGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); wGeo.setAttribute('color', new THREE.BufferAttribute(col, 3)); webReady = true;
+  };
   const buildNow = () => setWeb(cosmicWeb());
   try {
     const w = new Worker(URL.createObjectURL(new Blob([`${cosmicWeb};const p=cosmicWeb();postMessage(p,[p.buffer])`], { type: 'text/javascript' })));
     w.onmessage = e => { setWeb(e.data); w.terminate(); };
     w.onerror = () => { w.terminate(); (window.requestIdleCallback || setTimeout)(buildNow); };
   } catch (_) { (window.requestIdleCallback || setTimeout)(buildNow); }
-  const wMat = new THREE.PointsMaterial({ size: 1, map: tex, color: 0x9aa8ff, opacity: .55, ...additive });
+  const wMat = new THREE.PointsMaterial({ size: 1, map: tex, vertexColors: true, opacity: .55, ...additive });
   web.add(new THREE.Points(wGeo, wMat));
 
   // level 2 is the hero's galaxy (C.world); the Galactic Center's gamma-ray glow is added to it
@@ -431,7 +474,7 @@ function start() {
     // level 1
     const aWeb = smooth(21.4, 22.7, z);   // in early, so the web surrounds the galaxy as it shrinks
     web.visible = aWeb > .003;
-    if (web.visible) { const k = s(M_PER.web); web.scale.setScalar(k); web.rotation.z = .02 * t; wMat.size = Math.min(1.4 * k, .9); wMat.opacity = .55 * aWeb; }   // capped, so the points don't balloon
+    if (web.visible) { const k = s(M_PER.web); web.scale.setScalar(k); web.rotation.z = .02 * t; wMat.size = Math.min(1.1 * k, .9); wMat.opacity = aWeb; }   // capped, so the points don't balloon
 
     // level 2: the hero's galaxy
     const aGal = (1 - smooth(23.0, 23.7, z)) * smooth(16.5, 18.6, z);
