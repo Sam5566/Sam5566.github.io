@@ -262,14 +262,26 @@ function start() {
   }
 
 
-  // the zoom-out (p up to P_OUT) happens while the hero scrolls away; the rest over the research section
+  // the zoom-out (p up to P_OUT) happens while the hero scrolls away; the rest over the research section,
+  // shared out by how much happens rather than evenly in p: the dives get room in proportion to the
+  // decades they cross, so no single wheel notch jumps from one level to the next, and the stops,
+  // where little changes, get less. One share per ZKEYS segment after the zoom-out: web stop, dive
+  // into the galaxy, galaxy stop, slide to the Sun, dive to the Solar System, pause, dive to Earth, Earth stop
+  const SHARE = [.12, .15, .12, .04, .25, .03, .16, .13];
   const P_OUT = ZKEYS[1][0], hero = $('#top'), cosmosEl = $('#cosmos');
+  const WARP = [[0, P_OUT]];                      // knots: [fraction of the research section's scroll, p]
+  SHARE.forEach((f, i) => WARP.push([WARP[i][0] + f, ZKEYS[i + 2][0]]));
+  const across = (x, a, b) => {                   // piecewise-linear through WARP, column a to column b
+    let i = 1; while (i < WARP.length - 1 && x > WARP[i][a]) i++;
+    const k0 = WARP[i - 1], k1 = WARP[i];
+    return k0[b] + (k1[b] - k0[b]) * Math.min(1, Math.max(0, (x - k0[a]) / (k1[a] - k0[a])));
+  };
   const progress = () => {
     if (forced !== null) return +forced;
     const y = -cosmosEl.getBoundingClientRect().top, h = hero.offsetHeight;
     if (y < h) return Math.max(0, y / h) * P_OUT;
     const r = zoom.getBoundingClientRect();
-    return P_OUT + (1 - P_OUT) * Math.min(1, Math.max(0, -r.top / (r.height - innerHeight)));
+    return across(-r.top / (r.height - innerHeight), 0, 1);
   };
   // Stops: when scrolling ends between two of them, glide on to the next one in the direction of
   // travel (hero, cosmic web, galaxy, Earth, then the next section, after which scrolling is free)
@@ -277,7 +289,7 @@ function start() {
   const pageY = el => el.getBoundingClientRect().top + scrollY;
   const yOf = p => {                              // inverse of progress(), in page pixels
     const top = pageY(cosmosEl), h = hero.offsetHeight;
-    return p <= P_OUT ? top + p / P_OUT * h : top + h + (p - P_OUT) / (1 - P_OUT) * (zoom.offsetHeight - innerHeight);
+    return p <= P_OUT ? top + p / P_OUT * h : top + h + across(p, 1, 0) * (zoom.offsetHeight - innerHeight);
   };
   // ---- scroll controller for the zoom (from the hero to the start of the next section) ----
   // Inside this zone it drives the scroll itself, so it can tell a flick from a hold:
@@ -329,7 +341,7 @@ function start() {
   }
   if (forced === null) {
     // wheel and trackpad
-    let w = [], wIdle = 0, momentumTaken = false, lastEv = null, notched = false;   // lastEv: the latest wheel event, recorded or not
+    let w = [], wIdle = 0, momentumTaken = false, lastEv = null, notched = false, notchAt = -1e9;   // lastEv: the latest wheel event, recorded or not
     // leave scrolling alone while the CV (or any other dialog) is open: it scrolls itself
     const busy = e => document.querySelector('dialog[open]') || e.target.closest?.('dialog');
     addEventListener('wheel', e => {
@@ -342,7 +354,7 @@ function start() {
       // the browser scrolls it natively, so every notch counts and a spin keeps going; the scroll
       // listener below settles on a stop once it ends
       if (fresh) notched = e.deltaMode === 1 || (Math.abs(dy) >= 100 && Number.isInteger(e.deltaY));
-      if (notched) { stopGlide(); clearTimeout(wIdle); return; }
+      if (notched) { stopGlide(); clearTimeout(wIdle); notchAt = now; return; }
       e.preventDefault();
       if (glide && !fresh) return;                 // the momentum tail of a gesture we've taken over
       // any new input (a pause, a speed-up or a change of direction) is the user again: hand back fully
@@ -380,14 +392,15 @@ function start() {
       tp = null; release(stale ? 0 : (b.y - a.y) / Math.max(8, b.t - a.t));
     }, { passive: true });
 
-    // anything else that scrolls (mouse wheel, scrollbar, keys, links): settle once it stops
+    // anything else that scrolls (mouse wheel, scrollbar, keys, links): settle once it stops; after a
+    // wheel, only after a longer pause, so stepping through a dive notch by notch isn't carried off
     let sIdle = 0, sLast = scrollY;
     addEventListener('scroll', () => {
       if (own.y !== null && Math.abs(scrollY - own.y) < 2) return;   // our own movement
       own.y = null; if (glide) return;
       const d = scrollY - sLast; if (Math.abs(d) > 1) lastDir = Math.sign(d); sLast = scrollY;
       clearTimeout(sIdle);
-      sIdle = setTimeout(() => { if (!glide && !tp && inZone(scrollY, 0)) release(0); }, 260);
+      sIdle = setTimeout(() => { if (!glide && !tp && inZone(scrollY, 0)) release(0); }, performance.now() - notchAt < 500 ? 900 : 260);
     }, { passive: true });
     for (const ev of ['keydown', 'pointerdown']) addEventListener(ev, stopGlide, { passive: true });
   }
