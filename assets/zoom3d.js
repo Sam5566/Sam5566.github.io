@@ -267,9 +267,9 @@ function start() {
   // HTML labels pinned to 3D points
   // the pill is drawn over the leader line, so a line never crosses the label's text
   const label = (text, cls = '') => { const e = document.createElement('div'); e.className = 'zlabel ' + cls; e.innerHTML = `<span class="pill"><i></i>${text}</span>`; labelsEl.append(e); return e; };
-  const L = { sun: label('Sun'), gc: label('Galactic Center', 'hot'), halo: label('dark matter halo', 'dm'),
+  const L = { sun: label('Sun'), gc: label('Galactic Center', 'hot'), halo: label('Dark matter halo', 'dm'),
     sol: label('Sun'), earthSol: label('Earth', 'dm'), earthSun: label('Sun'),
-    lhc: label('LHC, CERN', 'hot'), lab: label('underground detectors, Gran Sasso'), wind: label('<svg class="warrow" width="26" height="12" viewBox="0 0 26 12"><path d="M1 6H23M17 1.5L23.5 6L17 10.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> dark matter wind, ~230 km/s', 'dm') };
+    lhc: label('LHC, CERN', 'hot'), lab: label('Underground detectors, Gran Sasso'), wind: label('<svg class="warrow" width="26" height="12" viewBox="0 0 26 12"><path d="M1 6H23M17 1.5L23.5 6L17 10.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Dark matter wind, ~230 km/s', 'dm') };
   const windArrow = L.wind.querySelector('.warrow'), wa = new THREE.Vector3(), wb = new THREE.Vector3();
   const tmp = new THREE.Vector3(); let pinFresh = false;
   // Labels don't follow the camera once shown: each tracks its target only while fading in (the zoom
