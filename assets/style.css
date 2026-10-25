@@ -285,3 +285,4 @@ html:has(dialog#cv[open]){overflow:hidden}
 }
 /* large hero type: justified (3 sentences) but never hyphenated */
 #tagline.justify{hyphens:manual;-webkit-hyphens:manual}
+.zlabel.pl{font-size:.74rem;color:#C9D0EE}.zlabel.pl .pill{background:rgba(4,6,14,.5);padding:2px 8px 2px 5px}

@@ -197,6 +197,26 @@ function start() {
   }
   const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: 0xffd78c, ...additive, opacity: 0 }));
   sunGlow.position.copy(SUN); sunGlow.scale.set(.5, .5, 1); sol.add(sunGlow);
+  // the planets where they are today (circular orbits from their mean longitudes at J2000 and mean
+  // motions; Earth sits at the group's origin, 1 AU from the Sun). Drawn as fixed-size dots: at true
+  // size they would be far below a pixel
+  const PLANETS = [   // a (AU), mean longitude at J2000 (deg), mean motion (deg/day), colour
+    ['Mercury', .387, 252.25, 4.09233, 0xb9b2a8], ['Venus', .723, 181.98, 1.60213, 0xf1d9a6], ['Earth', 1, 100.46, .98561, 0x7fa7ff],
+    ['Mars', 1.524, 355.45, .52403, 0xe0784a], ['Jupiter', 5.203, 34.40, .08309, 0xe8c9a0], ['Saturn', 9.537, 49.94, .03346, 0xe9d9a6],
+    ['Uranus', 19.19, 313.23, .01173, 0xa8e3ee], ['Neptune', 30.07, 304.88, .00598, 0x6f8dff]];
+  const days = (Date.now() - Date.UTC(2000, 0, 1, 12)) / 864e5, lonE = (100.46 + .98561 * days) * Math.PI / 180;
+  const pPos = [], pCol = [];
+  for (const [, a, L0, n, c] of PLANETS) {
+    const th = (L0 + n * days) * Math.PI / 180 - lonE;   // measured from Earth's direction, seen from the Sun
+    pPos.push(SUN.x + a * Math.cos(th), a * Math.sin(th), 0); pCol.push(...new THREE.Color(c).toArray());
+  }
+  const pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute('position', new THREE.Float32BufferAttribute(pPos, 3)); pGeo.setAttribute('color', new THREE.Float32BufferAttribute(pCol, 3));
+  const dotDisc = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+    const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, '#fff'); gr.addColorStop(.6, '#fff'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();   // a solid dot with a soft edge
+  const pMat = new THREE.PointsMaterial({ size: 9, sizeAttenuation: false, map: dotDisc, vertexColors: true, transparent: true, depthWrite: false, depthTest: false, opacity: 0 });
+  sol.add(new THREE.Points(pGeo, pMat));
 
   // level 3
   const earth = new THREE.Group(); earth.visible = false; scene.add(earth);
@@ -268,7 +288,8 @@ function start() {
   // the pill is drawn over the leader line, so a line never crosses the label's text
   const label = (text, cls = '') => { const e = document.createElement('div'); e.className = 'zlabel ' + cls; e.innerHTML = `<span class="pill"><i></i>${text}</span>`; labelsEl.append(e); return e; };
   const L = { sun: label('Sun'), gc: label('Galactic Center', 'hot'), halo: label('Dark matter halo', 'dm'),
-    sol: label('Sun'), earthSol: label('Earth', 'dm'), earthSun: label('Sun'),
+    sol: label('Sun'), earthSol: label('Earth', 'dm'),
+    ...Object.fromEntries(PLANETS.filter(p => p[1] > 1.2).map(p => ['pl' + p[0], label(p[0], 'pl')])), earthSun: label('Sun'),
     lhc: label('LHC, CERN', 'hot'), lab: label('Underground detectors, Gran Sasso'), wind: label('<svg class="warrow" width="26" height="12" viewBox="0 0 26 12"><path d="M1 6H23M17 1.5L23.5 6L17 10.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Dark matter wind, ~230 km/s', 'dm') };
   const windArrow = L.wind.querySelector('.warrow'), wa = new THREE.Vector3(), wb = new THREE.Vector3();
   const tmp = new THREE.Vector3(); let pinFresh = false;
@@ -507,7 +528,8 @@ function start() {
     // the Solar System
     const aSol = (1 - smooth(13.6, 15.5, z)) * smooth(9.6, 11.2, z);
     sol.visible = aSol > .003;
-    if (sol.visible) { sol.scale.setScalar(s(M_PER.sol)); orbitMat.opacity = .5 * aSol; sunGlow.material.opacity = aSol; }
+    if (sol.visible) { sol.scale.setScalar(s(M_PER.sol)); orbitMat.opacity = .5 * aSol; sunGlow.material.opacity = aSol; pMat.opacity = aSol; }
+    PLANETS.forEach(([name, a], i) => { if (a > 1.2) pin(L['pl' + name], sol, new THREE.Vector3(pPos[3 * i], pPos[3 * i + 1], 0), aSol * (a < 2 ? smooth(12.2, 11.6, z) : 1), null, true); });   // Mars only once it's clear of the Sun
     pin(L.sol, sol, SUN, aSol); pin(L.earthSol, sol, new THREE.Vector3(), aSol * (1 - smooth(10.8, 11.6, z)));
 
     // level 3
