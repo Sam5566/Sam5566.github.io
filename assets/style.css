@@ -291,8 +291,7 @@ html:has(dialog#cv[open]){overflow:hidden}
 .legend button:hover,.legend button[aria-pressed="true"]{color:var(--ink)}
 .legend button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .legend .t i{background:var(--heat)}.legend .c i{background:var(--tert)}
-.pin{transition:opacity .3s}.pin.dim{opacity:.18}
-.map .links{transition:opacity .35s}
+.pin.dim{opacity:.18}
 #talk-links,#work-links{opacity:0}
 .map[data-show="talk"] #talk-links,.map[data-show="work"] #work-links{opacity:1}
 .map[data-show="talk"] #collab-links,.map[data-show="work"] #collab-links{opacity:0}

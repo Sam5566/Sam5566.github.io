@@ -133,6 +133,7 @@ PLACES.slice(1).filter(p=>p.items.some(it=>it[0]==='collab')).forEach(p=>{const 
 // Legend: hovering (or tapping) a kind shows only its places, and its lines: collaborators' arcs
 // from New Brunswick (shown by default), talks as arcs from wherever I was based that year, and
 // studies and work as straight arrows in time order. The panel lists every place of that kind.
+// Everything switches at once, without animation.
 const yearOf=t=>+(/(19|20)\d\d/.exec(t)||[0,thisYear])[0];
 const base=yr=>yr<2023?PLACES.find(p=>p.name==='Taiwan'):PLACES[0];   // where I was based that year
 const arc=(a,b)=>{const d=Math.hypot(b[0]-a[0],b[1]-a[1]);return `M${a[0].toFixed(1)} ${a[1].toFixed(1)} Q ${((a[0]+b[0])/2).toFixed(1)} ${Math.max(Math.min(a[1],b[1])-d*.35,24-Math.min(a[1],b[1])).toFixed(1)} ${b[0].toFixed(1)} ${b[1].toFixed(1)}`};
@@ -150,8 +151,8 @@ function showKind(k){const map=$('#mapc');map.dataset.show=k||'';
   if(!k){showPlace(shown);return}
   const rows=PLACES.flatMap(p=>p.items.filter(it=>it[0]===k).map(it=>`<li class="${k}"><b>${p.name}</b> · ${it[1]}</li>`));
   placeEl.innerHTML=`<h3>${KIND_TITLE[k]}</h3><ul>${rows.join('')}</ul>`;
-  if(hasG&&!RM){gsap.from(placeEl.children,{y:8,opacity:0,duration:.3,stagger:.04,ease:'power2.out'});
-    gsap.fromTo(`#${k}-links path`,{strokeDashoffset:1},{strokeDashoffset:0,duration:.9,ease:'power2.inOut',stagger:.08})}}
+  // the lines appear whole and at once (the default map draws its collaborator arcs in on first view)
+  document.querySelectorAll(`#${k}-links path`).forEach(p=>{if(hasG)gsap.killTweensOf(p);p.style.strokeDashoffset=0})}
 const _showPlace=showPlace;showPlace=i=>{shown=i;_showPlace(i)};   // remember the chosen place, to return to it
 document.querySelectorAll('#legend button').forEach(b=>{const k=b.dataset.kind;
   b.addEventListener('mouseenter',()=>{if(!lockKind)showKind(k)});
