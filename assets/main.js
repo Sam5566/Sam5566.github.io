@@ -110,7 +110,7 @@ MAP.rows.forEach((row,ri)=>{for(let ci=0;ci<MAP.cols;ci++){if(parseInt(row[ci>>2
 $('#land').setAttribute('d',ld);
 const PIN={work:'accent',talk:'heat',collab:'tert'};
 const mapc=$('#mapc'),placeEl=$('#place');const pins=[];
-function showPlace(i){const p=PLACES[i];pins.forEach((b,j)=>b.setAttribute('aria-pressed',j===i));
+let showPlace=function(i){const p=PLACES[i];pins.forEach((b,j)=>b.setAttribute('aria-pressed',j===i));
   placeEl.innerHTML=`<h3>${p.name}</h3><ul>${p.items.map(([t,s])=>`<li class="${t}">${s}</li>`).join('')}</ul>`;
   if(hasG&&!RM)gsap.from(placeEl.children,{y:8,opacity:0,duration:.35,stagger:.05,ease:'power2.out'})}
 PLACES.forEach((p,i)=>{const [x,y]=px(p.lat,p.lon),b=document.createElement('button');
@@ -129,6 +129,36 @@ const home=px(PLACES[0].lat,PLACES[0].lon),thisYear=new Date().getFullYear();
 PLACES.slice(1).filter(p=>p.items.some(it=>it[0]==='collab')).forEach(p=>{const [x,y]=px(p.lat,p.lon),d=Math.hypot(x-home[0],y-home[1]);
   const last=Math.max(...p.items.filter(it=>it[0]==='collab').map(it=>it[2]||thisYear)),op=Math.max(.2,1-.3*Math.floor((thisYear-last)/5));
   $('#collab-links').append(mk('path',{opacity:op,d:`M${home[0].toFixed(1)} ${home[1].toFixed(1)} Q ${((x+home[0])/2).toFixed(1)} ${Math.max(Math.min(y,home[1])-d*.35,24-Math.min(y,home[1])).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`,pathLength:1,'stroke-dasharray':1}))});
+
+// Legend: hovering (or tapping) a kind shows only its places, and its lines: collaborators' arcs
+// from New Brunswick (shown by default), talks as arcs from wherever I was based that year, and
+// studies and work as straight arrows in time order. The panel lists every place of that kind.
+const yearOf=t=>+(/(19|20)\d\d/.exec(t)||[0,thisYear])[0];
+const base=yr=>yr<2023?PLACES.find(p=>p.name==='Taiwan'):PLACES[0];   // where I was based that year
+const arc=(a,b)=>{const d=Math.hypot(b[0]-a[0],b[1]-a[1]);return `M${a[0].toFixed(1)} ${a[1].toFixed(1)} Q ${((a[0]+b[0])/2).toFixed(1)} ${Math.max(Math.min(a[1],b[1])-d*.35,24-Math.min(a[1],b[1])).toFixed(1)} ${b[0].toFixed(1)} ${b[1].toFixed(1)}`};
+PLACES.forEach(p=>p.items.filter(it=>it[0]==='talk').forEach(it=>{const from=base(yearOf(it[1]));if(from===p)return;
+  $('#talk-links').append(mk('path',{d:arc(px(from.lat,from.lon),px(p.lat,p.lon)),pathLength:1,'stroke-dasharray':1}))}));
+// studies and work in time order (a place's first start year), one straight arrow per move
+const moves=PLACES.filter(p=>p.items.some(it=>it[0]==='work')).map(p=>({p,y:Math.min(...p.items.filter(it=>it[0]==='work').map(it=>yearOf(it[1])))})).sort((a,b)=>a.y-b.y);
+moves.slice(1).forEach((m,k)=>{const a=px(moves[k].p.lat,moves[k].p.lon),b=px(m.p.lat,m.p.lon),L=Math.hypot(b[0]-a[0],b[1]-a[1]),u=[(b[0]-a[0])/L,(b[1]-a[1])/L];
+  $('#work-links').append(mk('path',{d:`M${(a[0]+u[0]*14).toFixed(1)} ${(a[1]+u[1]*14).toFixed(1)} L${(b[0]-u[0]*16).toFixed(1)} ${(b[1]-u[1]*16).toFixed(1)}`,'marker-end':'url(#arrowhead)',pathLength:1,'stroke-dasharray':1}))});
+const KIND_TITLE={work:'Studied or worked',talk:'Talks',collab:'Collaborators'};
+let shown=0,lockKind=null;
+function showKind(k){const map=$('#mapc');map.dataset.show=k||'';
+  document.querySelectorAll('#legend button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.kind===k));
+  pins.forEach((b,j)=>b.classList.toggle('dim',!!k&&!PLACES[j].items.some(it=>it[0]===k)));
+  if(!k){showPlace(shown);return}
+  const rows=PLACES.flatMap(p=>p.items.filter(it=>it[0]===k).map(it=>`<li class="${k}"><b>${p.name}</b> · ${it[1]}</li>`));
+  placeEl.innerHTML=`<h3>${KIND_TITLE[k]}</h3><ul>${rows.join('')}</ul>`;
+  if(hasG&&!RM){gsap.from(placeEl.children,{y:8,opacity:0,duration:.3,stagger:.04,ease:'power2.out'});
+    gsap.fromTo(`#${k}-links path`,{strokeDashoffset:1},{strokeDashoffset:0,duration:.9,ease:'power2.inOut',stagger:.08})}}
+const _showPlace=showPlace;showPlace=i=>{shown=i;_showPlace(i)};   // remember the chosen place, to return to it
+document.querySelectorAll('#legend button').forEach(b=>{const k=b.dataset.kind;
+  b.addEventListener('mouseenter',()=>{if(!lockKind)showKind(k)});
+  b.addEventListener('mouseleave',()=>{if(!lockKind)showKind(null)});
+  b.addEventListener('focus',()=>{if(!lockKind)showKind(k)});b.addEventListener('blur',()=>{if(!lockKind)showKind(null)});
+  b.addEventListener('click',()=>{lockKind=lockKind===k?null:k;showKind(lockKind)})});   // tap (phones) keeps it until tapped again
+pins.forEach(b=>b.addEventListener('click',()=>{if(lockKind){lockKind=null;showKind(null)}}));
 
 /* ===== Galaxy masthead ===== */
 const cv=$('#gal'),g=cv.getContext('2d');
